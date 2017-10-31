@@ -39,13 +39,13 @@ except:
     device = product
 
 if not depsonly:
-    print "Device %s not found. Attempting to retrieve device repository from DU Github (http://github.com/DirtyUnicorns)." % device
+    print "Device %s not found. Attempting to retrieve device repository from Screw'd Github (http://github.com/ScrewdAOSP)." % device
 
 repositories = []
 
 page = 1
 while not depsonly:
-    request = Request("https://api.github.com/users/DirtyUnicorns/repos?page=%d" % page)
+    request = Request("https://api.github.com/users/ScrewdAOSP/repos?page=%d" % page)
     api_file = os.getenv("HOME") + '/api_token'
     if (os.path.isfile(api_file)):
         infile = open(api_file, 'r')
@@ -91,13 +91,13 @@ def indent(elem, level=0):
 
 def get_from_manifest(devicename):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/du_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/screwd_manifest.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
 
     for localpath in lm.findall("project"):
-        if re.search("android_device_.*_%s$" % device, localpath.get("name")):
+        if re.search("device_.*_%s$" % device, localpath.get("name")):
             return localpath.get("path")
 
     # Devices originally from AOSP are in the main manifest...
@@ -108,14 +108,14 @@ def get_from_manifest(devicename):
         mm = ElementTree.Element("manifest")
 
     for localpath in mm.findall("project"):
-        if re.search("android_device_.*_%s$" % device, localpath.get("name")):
+        if re.search("device_.*_%s$" % device, localpath.get("name")):
             return localpath.get("path")
 
     return None
 
 def is_in_manifest(projectname, branch):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/du_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/screwd_manifest.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -128,7 +128,7 @@ def is_in_manifest(projectname, branch):
 
 def add_to_manifest_dependencies(repositories):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/du_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/screwd_manifest.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -142,7 +142,7 @@ def add_to_manifest_dependencies(repositories):
                 print 'Updating dependency %s' % (repo_name)
                 existing_project.set('name', repository['repository'])
             if existing_project.attrib['revision'] == repository['branch']:
-                print 'DirtyUnicorns/%s already exists' % (repo_name)
+                print 'ScrewdAOSP/%s already exists' % (repo_name)
             else:
                 print 'updating branch for %s to %s' % (repo_name, repository['branch'])
                 existing_project.set('revision', repository['branch'])
@@ -150,7 +150,7 @@ def add_to_manifest_dependencies(repositories):
 
         print 'Adding dependency: %s -> %s' % (repo_name, repo_target)
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": repo_name, "revision": "p9x" })
+            "remote": "github", "name": repo_name, "revision": "p" })
 
         if 'branch' in repository:
             project.set('revision',repository['branch'])
@@ -161,13 +161,13 @@ def add_to_manifest_dependencies(repositories):
     raw_xml = ElementTree.tostring(lm)
     raw_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + raw_xml
 
-    f = open('.repo/local_manifests/du_manifest.xml', 'w')
+    f = open('.repo/local_manifests/screwd_manifest.xml', 'w')
     f.write(raw_xml)
     f.close()
 
 def add_to_manifest(repositories):
     try:
-        lm = ElementTree.parse(".repo/local_manifests/du_manifest.xml")
+        lm = ElementTree.parse(".repo/local_manifests/screwd_manifest.xml")
         lm = lm.getroot()
     except:
         lm = ElementTree.Element("manifest")
@@ -178,15 +178,15 @@ def add_to_manifest(repositories):
         existing_project = exists_in_tree_device(lm, repo_name)
         if existing_project != None:
             if existing_project.attrib['revision'] == repository['branch']:
-                print 'DirtyUnicorns/%s already exists' % (repo_name)
+                print 'ScrewdAOSP/%s already exists' % (repo_name)
             else:
-                print 'updating branch for DirtyUnicorns/%s to %s' % (repo_name, repository['branch'])
+                print 'updating branch for ScrewdAOSP/%s to %s' % (repo_name, repository['branch'])
                 existing_project.set('revision', repository['branch'])
             continue
 
-        print 'Adding dependency: DirtyUnicorns/%s -> %s' % (repo_name, repo_target)
+        print 'Adding dependency: ScrewdAOSP/%s -> %s' % (repo_name, repo_target)
         project = ElementTree.Element("project", attrib = { "path": repo_target,
-            "remote": "github", "name": "DirtyUnicorns/%s" % repo_name, "revision": "p9x" })
+            "remote": "github", "name": "DirtyUnicorns/%s" % repo_name, "revision": "p" })
 
         if 'branch' in repository:
             project.set('revision', repository['branch'])
@@ -197,13 +197,13 @@ def add_to_manifest(repositories):
     raw_xml = ElementTree.tostring(lm)
     raw_xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + raw_xml
 
-    f = open('.repo/local_manifests/du_manifest.xml', 'w')
+    f = open('.repo/local_manifests/screwd_manifest.xml', 'w')
     f.write(raw_xml)
     f.close()
 
 def fetch_dependencies(repo_path):
     print 'Looking for dependencies'
-    dependencies_path = repo_path + '/du.dependencies'
+    dependencies_path = repo_path + '/screwd.dependencies'
     syncable_repos = []
 
     if os.path.exists(dependencies_path):
@@ -240,13 +240,13 @@ if depsonly:
 else:
     for repository in repositories:
         repo_name = repository['name']
-        if repo_name.startswith("android_device_") and repo_name.endswith("_" + device):
+        if repo_name.startswith("device_") and repo_name.endswith("_" + device):
             print "Found repository: %s" % repository['name']
-            manufacturer = repo_name.replace("android_device_", "").replace("_" + device, "")
+            manufacturer = repo_name.replace("device_", "").replace("_" + device, "")
 
             repo_path = "device/%s/%s" % (manufacturer, device)
 
-            add_to_manifest([{'repository':repo_name,'target_path':repo_path,'branch':'p9x'}])
+            add_to_manifest([{'repository':repo_name,'target_path':repo_path,'branch':'p'}])
 
             print "Syncing repository to retrieve project."
             os.system('repo sync %s' % repo_path)
@@ -256,4 +256,4 @@ else:
             print "Done"
             sys.exit()
 
-print "Repository for %s not found in the DU Github repository list. If this is in error, you may need to manually add it to .repo/local_manifests/du_manifest.xml" % device
+print "Repository for %s not found in the Screwd AOSP Github repository list. If this is in error, you may need to manually add it to .repo/local_manifests/screwd_manifest.xml" % device
